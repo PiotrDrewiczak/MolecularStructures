@@ -3,6 +3,7 @@ package sample;
 import javafx.application.Application;
 import javafx.scene.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Cylinder;
 import javafx.stage.Stage;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
@@ -47,7 +48,6 @@ public class Main extends Application {
     double mouseDeltaY;
 
     private void buildCamera() {
-        System.out.println("buildCamera()");
         root.getChildren().add(cameraXform);
         cameraXform.getChildren().add(cameraXform2);
         cameraXform2.getChildren().add(cameraXform3);
@@ -161,6 +161,21 @@ public class Main extends Application {
             }
             world.getChildren().addAll(oxygenXform);
     }
+    private void createConnections() {
+        for (int i=0;i<Atoms.size()-1;i++) {
+            System.out.println("Loop nr:  "+i);
+            ArrayList<Double> arrayList1 = Atoms.get(i).get3D();
+            ArrayList<Double> arrayList2 = Atoms.get(i+1).get3D();
+            System.out.println(arrayList1);
+            System.out.println(arrayList2);
+            double length = Math.sqrt(
+                    Math.pow((arrayList2.get(0)-arrayList1.get(0)),2)+
+                    Math.pow((arrayList2.get(1)-arrayList1.get(1)),2)+
+                    Math.pow((arrayList2.get(2)-arrayList1.get(2)),2));
+            System.out.println("Length of vector:  "+length);
+        }
+    }
+
     private void readFile(){
         Atoms = new ArrayList<Atom>();
         try {
@@ -192,10 +207,10 @@ public class Main extends Application {
         root.getChildren().add(world);
         root.setDepthTest(DepthTest.ENABLE);
         readFile();
-        buildCamera();
+       // buildCamera();
    //     buildAxes();
-        createMolecules();
-
+       // createMolecules();
+        createConnections();
         Scene scene = new Scene(root, 800, 600, true);
         scene.setFill(Color.DARKGREY);
         handleKeyboard(scene, world);
