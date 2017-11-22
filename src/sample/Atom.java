@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.geometry.Point3D;
 import javafx.scene.shape.Sphere;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public abstract class Atom {
 
     abstract Sphere createMolecule();
 
-    abstract ArrayList get3D();
-
+    abstract ArrayList get3DPoint();
+    abstract Point3D getPoint3D();
 }
 

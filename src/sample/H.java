@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.geometry.Point3D;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
@@ -17,7 +18,7 @@ public class H extends Atom {
         final PhongMaterial greyMaterial = new PhongMaterial();
         greyMaterial.setDiffuseColor(Color.DARKGREY);
         greyMaterial.setSpecularColor(Color.GREY);
-        Sphere oxygenSphere = new Sphere(0.01);
+        Sphere oxygenSphere = new Sphere(0.07);
         oxygenSphere.setMaterial(greyMaterial);
         oxygenSphere.setTranslateX(this.x);
         oxygenSphere.setTranslateY(this.y);
@@ -25,13 +26,19 @@ public class H extends Atom {
         return oxygenSphere;
     }
     @Override
-    ArrayList get3D() {
+    ArrayList get3DPoint() {
         ArrayList<Double> arrayList = new ArrayList<Double>();
         arrayList.add(this.x);
         arrayList.add(this.y);
         arrayList.add(this.z);
         return arrayList;
     }
+    @Override
+    Point3D getPoint3D() {
+        Point3D point = new Point3D(this.x,this.y,this.z);
+        return point;
+    }
+
 }
 
 

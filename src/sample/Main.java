@@ -3,7 +3,6 @@ package sample;
 import javafx.application.Application;
 import javafx.scene.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Cylinder;
 import javafx.stage.Stage;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
@@ -17,16 +16,17 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main extends Application {
-    final Group root = new Group();
-    final Xform axisGroup = new Xform();
-    final Xform moleculeGroup = new Xform();
-    final Xform world = new Xform();
-    final PerspectiveCamera camera = new PerspectiveCamera(true);
-    final Xform cameraXform = new Xform();
-    final Xform cameraXform2 = new Xform();
-    final Xform cameraXform3 = new Xform();
+    private final Group root = new Group();
+    private final Xform axisGroup = new Xform();
+    private final Xform moleculeGroup = new Xform();
+    private final Xform world = new Xform();
+    private final PerspectiveCamera camera = new PerspectiveCamera(true);
+    private final Xform cameraXform = new Xform();
+    private  final Xform cameraXform2 = new Xform();
+    private   final Xform cameraXform3 = new Xform();
     private Scanner file;
     private ArrayList<Atom> Atoms;
+    private  Nodes[] nodes;
 
     private static final double CAMERA_INITIAL_DISTANCE = -1;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
@@ -40,52 +40,12 @@ public class Main extends Application {
     private static final double ROTATION_SPEED = 2.0;
     private static final double TRACK_SPEED = 0.3;
 
-    double mousePosX;
-    double mousePosY;
-    double mouseOldX;
-    double mouseOldY;
-    double mouseDeltaX;
-    double mouseDeltaY;
-
-    private void buildCamera() {
-        root.getChildren().add(cameraXform);
-        cameraXform.getChildren().add(cameraXform2);
-        cameraXform2.getChildren().add(cameraXform3);
-        cameraXform3.getChildren().add(camera);
-        cameraXform3.setRotateZ(180.0);
-
-        camera.setNearClip(CAMERA_NEAR_CLIP);
-        camera.setFarClip(CAMERA_FAR_CLIP);
-        camera.setTranslateZ(CAMERA_INITIAL_DISTANCE);
-        cameraXform.ry.setAngle(CAMERA_INITIAL_Y_ANGLE);
-        cameraXform.rx.setAngle(CAMERA_INITIAL_X_ANGLE);
-    }
-    private void buildAxes() {
-        System.out.println("buildAxes()");
-        final PhongMaterial redMaterial = new PhongMaterial();
-        redMaterial.setDiffuseColor(Color.DARKRED);
-        redMaterial.setSpecularColor(Color.RED);
-
-        final PhongMaterial greenMaterial = new PhongMaterial();
-        greenMaterial.setDiffuseColor(Color.DARKGREEN);
-        greenMaterial.setSpecularColor(Color.GREEN);
-
-        final PhongMaterial blueMaterial = new PhongMaterial();
-        blueMaterial.setDiffuseColor(Color.DARKBLUE);
-        blueMaterial.setSpecularColor(Color.BLUE);
-
-        final Box xAxis = new Box(AXIS_LENGTH, 1, 1);
-        final Box yAxis = new Box(1, AXIS_LENGTH, 1);
-        final Box zAxis = new Box(1, 1, AXIS_LENGTH);
-
-        xAxis.setMaterial(redMaterial);
-        yAxis.setMaterial(greenMaterial);
-        zAxis.setMaterial(blueMaterial);
-
-        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis);
-        axisGroup.setVisible(true);
-        world.getChildren().addAll(axisGroup);
-    }
+    private double mousePosX;
+    private double mousePosY;
+    private double mouseOldX;
+    private double mouseOldY;
+    private double mouseDeltaX;
+    private  double mouseDeltaY;
     private void handleMouse(Scene scene, final Node root) {
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent me) {
@@ -151,30 +111,7 @@ public class Main extends Application {
         });
     }
 
-    private void createMolecules(){
-        Xform moleculeXform = new Xform();
-        Xform oxygenXform = new Xform();
 
-        moleculeXform.getChildren().add(oxygenXform);
-            for(Atom o:   Atoms) {
-                oxygenXform.getChildren().add(o.createMolecule());
-            }
-            world.getChildren().addAll(oxygenXform);
-    }
-    private void createConnections() {
-        for (int i=0;i<Atoms.size()-1;i++) {
-            System.out.println("Loop nr:  "+i);
-            ArrayList<Double> arrayList1 = Atoms.get(i).get3D();
-            ArrayList<Double> arrayList2 = Atoms.get(i+1).get3D();
-            System.out.println(arrayList1);
-            System.out.println(arrayList2);
-            double length = Math.sqrt(
-                    Math.pow((arrayList2.get(0)-arrayList1.get(0)),2)+
-                    Math.pow((arrayList2.get(1)-arrayList1.get(1)),2)+
-                    Math.pow((arrayList2.get(2)-arrayList1.get(2)),2));
-            System.out.println("Length of vector:  "+length);
-        }
-    }
 
     private void readFile(){
         Atoms = new ArrayList<Atom>();
@@ -184,6 +121,7 @@ public class Main extends Application {
             file=new Scanner(new File(pathName));
             int numberOfAtoms=Integer.parseInt(file.next());
             Atom[] instances = new Atom[numberOfAtoms];
+            nodes=new Nodes[numberOfAtoms-1];
             for (int i = 0; i < numberOfAtoms; i++) {
                 String name = file.next();
                 double x = file.nextDouble();
@@ -196,10 +134,90 @@ public class Main extends Application {
                 Atoms.add(instances[i]);
             }
         } catch(Exception e) {
-             System.out.println(e);
-            }
+            System.out.println(e);
+        }
 
-    file.close();
+        file.close();
+    }
+    private void buildCamera() {
+        root.getChildren().add(cameraXform);
+        cameraXform.getChildren().add(cameraXform2);
+        cameraXform2.getChildren().add(cameraXform3);
+        cameraXform3.getChildren().add(camera);
+        cameraXform3.setRotateZ(180.0);
+
+        camera.setNearClip(CAMERA_NEAR_CLIP);
+        camera.setFarClip(CAMERA_FAR_CLIP);
+        camera.setTranslateZ(CAMERA_INITIAL_DISTANCE);
+        cameraXform.ry.setAngle(CAMERA_INITIAL_Y_ANGLE);
+        cameraXform.rx.setAngle(CAMERA_INITIAL_X_ANGLE);
+    }
+    private void buildAxes() {
+        System.out.println("buildAxes()");
+        final PhongMaterial redMaterial = new PhongMaterial();
+        redMaterial.setDiffuseColor(Color.DARKRED);
+        redMaterial.setSpecularColor(Color.RED);
+
+        final PhongMaterial greenMaterial = new PhongMaterial();
+        greenMaterial.setDiffuseColor(Color.DARKGREEN);
+        greenMaterial.setSpecularColor(Color.GREEN);
+
+        final PhongMaterial blueMaterial = new PhongMaterial();
+        blueMaterial.setDiffuseColor(Color.DARKBLUE);
+        blueMaterial.setSpecularColor(Color.BLUE);
+
+        final Box xAxis = new Box(AXIS_LENGTH, 1, 1);
+        final Box yAxis = new Box(1, AXIS_LENGTH, 1);
+        final Box zAxis = new Box(1, 1, AXIS_LENGTH);
+
+        xAxis.setMaterial(redMaterial);
+        yAxis.setMaterial(greenMaterial);
+        zAxis.setMaterial(blueMaterial);
+
+        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis);
+        axisGroup.setVisible(true);
+        world.getChildren().addAll(axisGroup);
+    }
+    private void createMolecules(){
+        Xform oxygenXform = new Xform();
+            for(Atom o:   Atoms) {
+                oxygenXform.getChildren().add(o.createMolecule());
+            }
+            world.getChildren().addAll(oxygenXform);
+    }
+    private void createConnections() {
+        for (int i=0;i<Atoms.size()-1;i++) {
+            System.out.println("Loop nr:  "+i);
+            ArrayList<Double> arrayList1 = Atoms.get(i).get3DPoint();
+            ArrayList<Double> arrayList2 = Atoms.get(i+1).get3DPoint();
+            System.out.println(arrayList1);
+            System.out.println(arrayList2);
+            double length = Math.sqrt(
+                    Math.pow((arrayList2.get(0)-arrayList1.get(0)),2)+
+                    Math.pow((arrayList2.get(1)-arrayList1.get(1)),2)+
+                    Math.pow((arrayList2.get(2)-arrayList1.get(2)),2));
+            double midPoint=(
+                            (arrayList1.get(0)+arrayList2.get(0))/2+
+                            (arrayList1.get(1)+arrayList2.get(1))/2+
+                            (arrayList1.get(2)+arrayList2.get(2))/2);
+
+            double alpha = Math.acos(
+                            (arrayList2.get(0)*arrayList1.get(0))+
+                            (arrayList2.get(1)*arrayList1.get(1))+
+                            (arrayList2.get(2)*arrayList1.get(2))
+
+
+            );
+            System.out.println("Length of vector:  "+length);
+        }
+    }
+    private void createNodes(){
+        Xform nodesXform = new Xform();
+        for (int i=0;i<Atoms.size()-1;i++) {
+            nodes[i]=new Nodes(Atoms.get(i).getPoint3D(),Atoms.get(i).getPoint3D());
+            nodesXform.getChildren().addAll(nodes[i].createConnection());
+        }
+        world.getChildren().addAll(nodesXform);
     }
 
     @Override
@@ -207,10 +225,11 @@ public class Main extends Application {
         root.getChildren().add(world);
         root.setDepthTest(DepthTest.ENABLE);
         readFile();
-       // buildCamera();
-   //     buildAxes();
-       // createMolecules();
-        createConnections();
+        buildCamera();
+        //     buildAxes();
+        createMolecules();
+        createNodes();
+       // createConnections();
         Scene scene = new Scene(root, 800, 600, true);
         scene.setFill(Color.DARKGREY);
         handleKeyboard(scene, world);
