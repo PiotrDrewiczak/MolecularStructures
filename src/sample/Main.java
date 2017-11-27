@@ -22,11 +22,12 @@ public class Main extends Application {
     private final Xform world = new Xform();
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
     private final Xform cameraXform = new Xform();
-    private  final Xform cameraXform2 = new Xform();
-    private   final Xform cameraXform3 = new Xform();
+    private final Xform cameraXform2 = new Xform();
+    private final Xform cameraXform3 = new Xform();
+    private final double distanceConnection=1.55;
     private Scanner file;
     private ArrayList<Atom> Atoms;
-    private  Nodes[] nodes;
+    private ArrayList<Nodes> Nodes;
 
     private static final double CAMERA_INITIAL_DISTANCE = -1;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
@@ -121,7 +122,7 @@ public class Main extends Application {
             file=new Scanner(new File(pathName));
             int numberOfAtoms=Integer.parseInt(file.next());
             Atom[] instances = new Atom[numberOfAtoms];
-            nodes=new Nodes[numberOfAtoms-1];
+
             for (int i = 0; i < numberOfAtoms; i++) {
                 String name = file.next();
                 double x = file.nextDouble();
@@ -153,7 +154,6 @@ public class Main extends Application {
         cameraXform.rx.setAngle(CAMERA_INITIAL_X_ANGLE);
     }
     private void buildAxes() {
-        System.out.println("buildAxes()");
         final PhongMaterial redMaterial = new PhongMaterial();
         redMaterial.setDiffuseColor(Color.DARKRED);
         redMaterial.setSpecularColor(Color.RED);
@@ -166,9 +166,9 @@ public class Main extends Application {
         blueMaterial.setDiffuseColor(Color.DARKBLUE);
         blueMaterial.setSpecularColor(Color.BLUE);
 
-        final Box xAxis = new Box(AXIS_LENGTH, 1, 1);
-        final Box yAxis = new Box(1, AXIS_LENGTH, 1);
-        final Box zAxis = new Box(1, 1, AXIS_LENGTH);
+        final Box xAxis = new Box(AXIS_LENGTH, 0.01, 0.01);
+        final Box yAxis = new Box(0.01, AXIS_LENGTH, 0.01);
+        final Box zAxis = new Box(0.01, 0.01, AXIS_LENGTH);
 
         xAxis.setMaterial(redMaterial);
         yAxis.setMaterial(greenMaterial);
@@ -185,39 +185,28 @@ public class Main extends Application {
             }
             world.getChildren().addAll(oxygenXform);
     }
-    private void createConnections() {
-        for (int i=0;i<Atoms.size()-1;i++) {
-            System.out.println("Loop nr:  "+i);
-            ArrayList<Double> arrayList1 = Atoms.get(i).get3DPoint();
-            ArrayList<Double> arrayList2 = Atoms.get(i+1).get3DPoint();
-            System.out.println(arrayList1);
-            System.out.println(arrayList2);
-            double length = Math.sqrt(
-                    Math.pow((arrayList2.get(0)-arrayList1.get(0)),2)+
-                    Math.pow((arrayList2.get(1)-arrayList1.get(1)),2)+
-                    Math.pow((arrayList2.get(2)-arrayList1.get(2)),2));
-            double midPoint=(
-                            (arrayList1.get(0)+arrayList2.get(0))/2+
-                            (arrayList1.get(1)+arrayList2.get(1))/2+
-                            (arrayList1.get(2)+arrayList2.get(2))/2);
 
-            double alpha = Math.acos(
-                            (arrayList2.get(0)*arrayList1.get(0))+
-                            (arrayList2.get(1)*arrayList1.get(1))+
-                            (arrayList2.get(2)*arrayList1.get(2))
-
-
-            );
-            System.out.println("Length of vector:  "+length);
-        }
-    }
-    private void createNodes(){
+    private void createNodes() {
+        Nodes = new ArrayList<Nodes>();
+        double distance = 0;
         Xform nodesXform = new Xform();
-        for (int i=0;i<Atoms.size()-1;i++) {
-            nodes[i]=new Nodes(Atoms.get(i).getPoint3D(),Atoms.get(i).getPoint3D());
-            nodesXform.getChildren().addAll(nodes[i].createConnection());
+        for (int i = 0; i < Atoms.size(); i++) {
+            for (int j = 0; j < Atoms.size(); j++) {
+                distance = Math.sqrt(
+                                Math.pow((Atoms.get(i).getPoint3D().getX()-Atoms.get(j).getPoint3D().getX()), 2) +
+                                Math.pow((Atoms.get(i).getPoint3D().getY()-Atoms.get(j).getPoint3D().getY()), 2) +
+                                Math.pow((Atoms.get(i).getPoint3D().getZ()-Atoms.get(j).getPoint3D().getZ()), 2));
+
+                if (distance <= distanceConnection && distance!=0.0) {
+                    Nodes node = new Nodes(Atoms.get(i).getPoint3D(), Atoms.get(j).getPoint3D());
+                    Nodes.add(node);
+                }
+            }
         }
-        world.getChildren().addAll(nodesXform);
+            for(Nodes n: Nodes){
+                nodesXform.getChildren().add(n.createConnection());
+            }
+                world.getChildren().addAll(nodesXform);
     }
 
     @Override
@@ -226,10 +215,9 @@ public class Main extends Application {
         root.setDepthTest(DepthTest.ENABLE);
         readFile();
         buildCamera();
-        //     buildAxes();
+       // buildAxes();
         createMolecules();
         createNodes();
-       // createConnections();
         Scene scene = new Scene(root, 800, 600, true);
         scene.setFill(Color.DARKGREY);
         handleKeyboard(scene, world);

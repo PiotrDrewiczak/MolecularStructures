@@ -5,8 +5,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
 
-import java.util.ArrayList;
-
 public class C extends Atom{
     public C(String name,double x,double y,double z){
         super(name,x,y,z);
@@ -23,15 +21,6 @@ public class C extends Atom{
         oxygenSphere.setTranslateY(this.y);
         oxygenSphere.setTranslateZ(this.z);
         return oxygenSphere;
-    }
-
-    @Override
-    ArrayList get3DPoint() {
-        ArrayList<Double> arrayList = new ArrayList<Double>();
-        arrayList.add(this.x);
-        arrayList.add(this.y);
-        arrayList.add(this.z);
-        return arrayList;
     }
 
     @Override

@@ -25,14 +25,6 @@ public class O extends Atom{
         return oxygenSphere;
     }
     @Override
-    ArrayList get3DPoint() {
-        ArrayList<Double> arrayList = new ArrayList<Double>();
-        arrayList.add(this.x);
-        arrayList.add(this.y);
-        arrayList.add(this.z);
-        return arrayList;
-    }
-    @Override
     Point3D getPoint3D() {
         Point3D point = new Point3D(this.x,this.y,this.z);
         return point;
