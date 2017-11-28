@@ -5,22 +5,22 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
 
-public class C extends Atom{
+public class C extends Atom {
     public C(String name,double x,double y,double z){
         super(name,x,y,z);
     }
 
     @Override
-    Sphere createMolecule() {
+    Sphere createAtom() {
         final PhongMaterial khakiMaterial = new PhongMaterial();
         khakiMaterial.setDiffuseColor(Color.DARKKHAKI);
         khakiMaterial.setSpecularColor(Color.KHAKI);
-        Sphere oxygenSphere = new Sphere(0.07);
-        oxygenSphere.setMaterial(khakiMaterial);
-        oxygenSphere.setTranslateX(this.x);
-        oxygenSphere.setTranslateY(this.y);
-        oxygenSphere.setTranslateZ(this.z);
-        return oxygenSphere;
+        Sphere sphere = new Sphere(0.2);
+        sphere.setMaterial(khakiMaterial);
+        sphere.setTranslateX(this.x);
+        sphere.setTranslateY(this.y);
+        sphere.setTranslateZ(this.z);
+        return sphere;
     }
 
     @Override

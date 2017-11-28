@@ -1,14 +1,14 @@
 package sample;
 
 import javafx.application.Application;
-import javafx.scene.*;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
 import javafx.event.EventHandler;
+import javafx.scene.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.stage.Stage;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -27,7 +27,7 @@ public class Main extends Application {
     private final double distanceConnection=1.55;
     private Scanner file;
     private ArrayList<Atom> Atoms;
-    private ArrayList<Nodes> Nodes;
+    private ArrayList<sample.Nodes> Nodes;
 
     private static final double CAMERA_INITIAL_DISTANCE = -1;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
@@ -49,7 +49,7 @@ public class Main extends Application {
     private  double mouseDeltaY;
     private void handleMouse(Scene scene, final Node root) {
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override public void handle(MouseEvent me) {
+             public void handle(MouseEvent me) {
                 mousePosX = me.getSceneX();
                 mousePosY = me.getSceneY();
                 mouseOldX = me.getSceneX();
@@ -57,7 +57,7 @@ public class Main extends Application {
             }
         });
         scene.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override public void handle(MouseEvent me) {
+             public void handle(MouseEvent me) {
                 mouseOldX = mousePosX;
                 mouseOldY = mousePosY;
                 mousePosX = me.getSceneX();
@@ -91,7 +91,6 @@ public class Main extends Application {
     }
     private void handleKeyboard(Scene scene, final Node root) {
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
             public void handle(KeyEvent event) {
                 switch (event.getCode()) {
                     case Z:
@@ -112,13 +111,11 @@ public class Main extends Application {
         });
     }
 
-
-
     private void readFile(){
         Atoms = new ArrayList<Atom>();
         try {
             String QualifyClassName="sample.";
-            String pathName="C:\\Users\\pinioss\\Desktop\\Git[Projects]\\Java\\MoleculeVisualisation\\src\\sample\\d-ala.xyz";
+            String pathName="C:\\Users\\pinioss\\Desktop\\Git[Projects]\\MolecularStructures\\src\\main\\java\\sample\\d-ala.xyz";
             file=new Scanner(new File(pathName));
             int numberOfAtoms=Integer.parseInt(file.next());
             Atom[] instances = new Atom[numberOfAtoms];
@@ -138,7 +135,7 @@ public class Main extends Application {
             System.out.println(e);
         }
 
-        file.close();
+            file.close();
     }
     private void buildCamera() {
         root.getChildren().add(cameraXform);
@@ -166,9 +163,9 @@ public class Main extends Application {
         blueMaterial.setDiffuseColor(Color.DARKBLUE);
         blueMaterial.setSpecularColor(Color.BLUE);
 
-        final Box xAxis = new Box(AXIS_LENGTH, 0.01, 0.01);
-        final Box yAxis = new Box(0.01, AXIS_LENGTH, 0.01);
-        final Box zAxis = new Box(0.01, 0.01, AXIS_LENGTH);
+        final Box xAxis = new Box(AXIS_LENGTH, 0.1, 0.1);
+        final Box yAxis = new Box(0.1, AXIS_LENGTH, 0.1);
+        final Box zAxis = new Box(0.1, 0.1, AXIS_LENGTH);
 
         xAxis.setMaterial(redMaterial);
         yAxis.setMaterial(greenMaterial);
@@ -181,13 +178,13 @@ public class Main extends Application {
     private void createMolecules(){
         Xform oxygenXform = new Xform();
             for(Atom o:   Atoms) {
-                oxygenXform.getChildren().add(o.createMolecule());
+                oxygenXform.getChildren().add(o.createAtom());
             }
             world.getChildren().addAll(oxygenXform);
     }
 
     private void createNodes() {
-        Nodes = new ArrayList<Nodes>();
+        Nodes = new ArrayList<sample.Nodes>();
         double distance = 0;
         Xform nodesXform = new Xform();
         for (int i = 0; i < Atoms.size(); i++) {
@@ -198,12 +195,12 @@ public class Main extends Application {
                                 Math.pow((Atoms.get(i).getPoint3D().getZ()-Atoms.get(j).getPoint3D().getZ()), 2));
 
                 if (distance <= distanceConnection && distance!=0.0) {
-                    Nodes node = new Nodes(Atoms.get(i).getPoint3D(), Atoms.get(j).getPoint3D());
+                    sample.Nodes node = new Nodes(Atoms.get(i).getPoint3D(), Atoms.get(j).getPoint3D());
                     Nodes.add(node);
                 }
             }
         }
-            for(Nodes n: Nodes){
+            for(sample.Nodes n: Nodes){
                 nodesXform.getChildren().add(n.createConnection());
             }
                 world.getChildren().addAll(nodesXform);
@@ -215,7 +212,7 @@ public class Main extends Application {
         root.setDepthTest(DepthTest.ENABLE);
         readFile();
         buildCamera();
-       // buildAxes();
+        buildAxes();
         createMolecules();
         createNodes();
         Scene scene = new Scene(root, 800, 600, true);

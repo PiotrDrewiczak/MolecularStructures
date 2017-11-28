@@ -14,7 +14,7 @@ public abstract class Atom {
         this.y = y;
         this.z = z; }
 
-    abstract Sphere createMolecule();
+    abstract Sphere createAtom();
     abstract Point3D getPoint3D();
 }
 

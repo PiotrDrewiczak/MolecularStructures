@@ -5,8 +5,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
 
-import java.util.ArrayList;
-
 public class H extends Atom {
 
     public H(String name,double x,double y,double z){
@@ -14,16 +12,16 @@ public class H extends Atom {
     }
 
     @Override
-     Sphere createMolecule() {
+     Sphere createAtom() {
         final PhongMaterial greyMaterial = new PhongMaterial();
         greyMaterial.setDiffuseColor(Color.DARKGREY);
         greyMaterial.setSpecularColor(Color.GREY);
-        Sphere oxygenSphere = new Sphere(0.07);
-        oxygenSphere.setMaterial(greyMaterial);
-        oxygenSphere.setTranslateX(this.x);
-        oxygenSphere.setTranslateY(this.y);
-        oxygenSphere.setTranslateZ(this.z);
-        return oxygenSphere;
+        Sphere sphere = new Sphere(0.2);
+        sphere.setMaterial(greyMaterial);
+        sphere.setTranslateX(this.x);
+        sphere.setTranslateY(this.y);
+        sphere.setTranslateZ(this.z);
+        return sphere;
     }
 
     @Override
