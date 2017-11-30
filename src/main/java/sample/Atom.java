@@ -5,11 +5,10 @@ import javafx.scene.shape.Sphere;
 
 public abstract class Atom {
 
-    protected String name;
     protected double x, y, z;
+    protected double radius=0.2;
 
-    public Atom(String name, double x, double y, double z) {
-        this.name = name;
+    public Atom(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z; }

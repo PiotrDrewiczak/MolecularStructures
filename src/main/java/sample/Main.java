@@ -24,9 +24,9 @@ public class Main extends Application {
     private final Xform cameraXform = new Xform();
     private final Xform cameraXform2 = new Xform();
     private final Xform cameraXform3 = new Xform();
-    private final double distanceConnection=1.55;
+    private final double distanceConnection=1.55; // VALUE FOR ATOM CONNECTION
     private Scanner file;
-    private ArrayList<Atom> Atoms;
+    private ArrayList<sample.Atom> Atoms;
     private ArrayList<sample.Nodes> Nodes;
 
     private static final double CAMERA_INITIAL_DISTANCE = -1;
@@ -34,7 +34,12 @@ public class Main extends Application {
     private static final double CAMERA_INITIAL_Y_ANGLE = 320.0;
     private static final double CAMERA_NEAR_CLIP = 0.1;
     private static final double CAMERA_FAR_CLIP = 10000.0;
-    private static final double AXIS_LENGTH = 250.0;
+    private static final double AXIS_LENGTH = 25;
+    private static final double AXIS_VALUE = 0.05; // declarate for height, width and depth of axis
+    private static final int SCENE_WIDTH = 800;
+    private static final int SCENE_HEIGHT = 600;
+    private static final String STAGE_TITTLE = "Visualization of molecular structures";
+
     private static final double CONTROL_MULTIPLIER = 0.1;
     private static final double SHIFT_MULTIPLIER = 10.0;
     private static final double MOUSE_SPEED = 0.1;
@@ -47,6 +52,7 @@ public class Main extends Application {
     private double mouseOldY;
     private double mouseDeltaX;
     private  double mouseDeltaY;
+
     private void handleMouse(Scene scene, final Node root) {
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
              public void handle(MouseEvent me) {
@@ -110,12 +116,11 @@ public class Main extends Application {
             }
         });
     }
-
     private void readFile(){
-        Atoms = new ArrayList<Atom>();
+        Atoms = new ArrayList<sample.Atom>();
         try {
             String QualifyClassName="sample.";
-            String pathName="C:\\Users\\pinioss\\Desktop\\Git[Projects]\\MolecularStructures\\src\\main\\java\\sample\\d-ala.xyz";
+            String pathName="C:\\Users\\pinioss\\Desktop\\Git[Projects]\\MolecularStructures\\src\\main\\resources\\d-ala.xyz";
             file=new Scanner(new File(pathName));
             int numberOfAtoms=Integer.parseInt(file.next());
             Atom[] instances = new Atom[numberOfAtoms];
@@ -127,8 +132,8 @@ public class Main extends Application {
                 double z = file.nextDouble();
 
                 Class<?> clazz = Class.forName(QualifyClassName+name);
-                Constructor<?> constructor = clazz.getConstructor(String.class, Double.TYPE,Double.TYPE,Double.TYPE);
-                instances[i] = (Atom) constructor.newInstance(name,x,y,z);
+                Constructor<?> constructor = clazz.getConstructor(Double.TYPE,Double.TYPE,Double.TYPE);
+                instances[i] = (Atom) constructor.newInstance(x,y,z);
                 Atoms.add(instances[i]);
             }
         } catch(Exception e) {
@@ -163,9 +168,9 @@ public class Main extends Application {
         blueMaterial.setDiffuseColor(Color.DARKBLUE);
         blueMaterial.setSpecularColor(Color.BLUE);
 
-        final Box xAxis = new Box(AXIS_LENGTH, 0.1, 0.1);
-        final Box yAxis = new Box(0.1, AXIS_LENGTH, 0.1);
-        final Box zAxis = new Box(0.1, 0.1, AXIS_LENGTH);
+        final Box xAxis = new Box(AXIS_LENGTH, AXIS_VALUE, AXIS_VALUE);
+        final Box yAxis = new Box(AXIS_VALUE, AXIS_LENGTH, AXIS_VALUE);
+        final Box zAxis = new Box(AXIS_VALUE, AXIS_VALUE, AXIS_LENGTH);
 
         xAxis.setMaterial(redMaterial);
         yAxis.setMaterial(greenMaterial);
@@ -215,11 +220,11 @@ public class Main extends Application {
         buildAxes();
         createMolecules();
         createNodes();
-        Scene scene = new Scene(root, 800, 600, true);
+        Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT, true);
         scene.setFill(Color.DARKGREY);
         handleKeyboard(scene, world);
         handleMouse(scene, world);
-        primaryStage.setTitle("Molecules Visualisation");
+        primaryStage.setTitle(STAGE_TITTLE);
         primaryStage.setScene(scene);
         primaryStage.show();
 

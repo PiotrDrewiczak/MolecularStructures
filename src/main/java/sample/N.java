@@ -6,8 +6,8 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
 
 public class N extends Atom {
-    public N(String name,double x,double y,double z){
-        super(name,x,y,z);
+    public N(double x,double y,double z){
+        super(x,y,z);
     }
 
     @Override
@@ -15,7 +15,7 @@ public class N extends Atom {
         final PhongMaterial blueMaterial = new PhongMaterial();
         blueMaterial.setDiffuseColor(Color.DARKBLUE);
         blueMaterial.setSpecularColor(Color.BLUE);
-        Sphere sphere = new Sphere(0.2);
+        Sphere sphere = new Sphere(this.radius);
         sphere.setMaterial(blueMaterial);
         sphere.setTranslateX(this.x);
         sphere.setTranslateY(this.y);

@@ -7,8 +7,8 @@ import javafx.scene.shape.Sphere;
 
 public class H extends Atom {
 
-    public H(String name,double x,double y,double z){
-        super(name,x,y,z);
+    public H(double x,double y,double z){
+        super(x,y,z);
     }
 
     @Override
@@ -16,7 +16,7 @@ public class H extends Atom {
         final PhongMaterial greyMaterial = new PhongMaterial();
         greyMaterial.setDiffuseColor(Color.DARKGREY);
         greyMaterial.setSpecularColor(Color.GREY);
-        Sphere sphere = new Sphere(0.2);
+        Sphere sphere = new Sphere(this.radius);
         sphere.setMaterial(greyMaterial);
         sphere.setTranslateX(this.x);
         sphere.setTranslateY(this.y);
