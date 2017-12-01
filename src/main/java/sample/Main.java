@@ -1,13 +1,19 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.*;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -15,7 +21,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Main extends Application {
+public class Main extends Application implements EventHandler<ActionEvent>{
     private final Group root = new Group();
     private final Xform axisGroup = new Xform();
     private final Xform moleculeGroup = new Xform();
@@ -25,7 +31,6 @@ public class Main extends Application {
     private final Xform cameraXform2 = new Xform();
     private final Xform cameraXform3 = new Xform();
     private final double distanceConnection=1.55; // VALUE FOR ATOM CONNECTION
-    private Scanner file;
     private ArrayList<sample.Atom> Atoms;
     private ArrayList<sample.Nodes> Nodes;
 
@@ -39,6 +44,7 @@ public class Main extends Application {
     private static final int SCENE_WIDTH = 800;
     private static final int SCENE_HEIGHT = 600;
     private static final String STAGE_TITTLE = "Visualization of molecular structures";
+    private static final String QualifyClassName="sample.";
 
     private static final double CONTROL_MULTIPLIER = 0.1;
     private static final double SHIFT_MULTIPLIER = 10.0;
@@ -116,32 +122,6 @@ public class Main extends Application {
             }
         });
     }
-    private void readFile(){
-        Atoms = new ArrayList<sample.Atom>();
-        try {
-            String QualifyClassName="sample.";
-            String pathName="C:\\Users\\pinioss\\Desktop\\Git[Projects]\\MolecularStructures\\src\\main\\resources\\d-ala.xyz";
-            file=new Scanner(new File(pathName));
-            int numberOfAtoms=Integer.parseInt(file.next());
-            Atom[] instances = new Atom[numberOfAtoms];
-
-            for (int i = 0; i < numberOfAtoms; i++) {
-                String name = file.next();
-                double x = file.nextDouble();
-                double y = file.nextDouble();
-                double z = file.nextDouble();
-
-                Class<?> clazz = Class.forName(QualifyClassName+name);
-                Constructor<?> constructor = clazz.getConstructor(Double.TYPE,Double.TYPE,Double.TYPE);
-                instances[i] = (Atom) constructor.newInstance(x,y,z);
-                Atoms.add(instances[i]);
-            }
-        } catch(Exception e) {
-            System.out.println(e);
-        }
-
-            file.close();
-    }
     private void buildCamera() {
         root.getChildren().add(cameraXform);
         cameraXform.getChildren().add(cameraXform2);
@@ -180,15 +160,14 @@ public class Main extends Application {
         axisGroup.setVisible(true);
         world.getChildren().addAll(axisGroup);
     }
-    private void createMolecules(){
+    private void buildMolecule(){
         Xform oxygenXform = new Xform();
             for(Atom o:   Atoms) {
                 oxygenXform.getChildren().add(o.createAtom());
             }
             world.getChildren().addAll(oxygenXform);
     }
-
-    private void createNodes() {
+    private void buildNodes() {
         Nodes = new ArrayList<sample.Nodes>();
         double distance = 0;
         Xform nodesXform = new Xform();
@@ -210,28 +189,83 @@ public class Main extends Application {
             }
                 world.getChildren().addAll(nodesXform);
     }
+    private void openFileAction() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open File");
+        File file = chooser.showOpenDialog(new Stage());
+        try{
+            Atoms = new ArrayList<sample.Atom>();
+            Scanner scanner = new Scanner(file);
+            int numberOfAtoms=Integer.parseInt(scanner.next());
+            Atom[] instances = new Atom[numberOfAtoms];
+
+            for (int i = 0; i < numberOfAtoms; i++) {
+                String name = scanner.next();
+                double x = scanner.nextDouble();
+                double y = scanner.nextDouble();
+                double z = scanner.nextDouble();
+
+                Class<?> clazz = Class.forName(QualifyClassName + name);
+                Constructor<?> constructor = clazz.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
+                instances[i] = (Atom) constructor.newInstance(x, y, z);
+                Atoms.add(instances[i]);
+            }
+            scanner.close();
+        }catch(Exception e){
+            System.out.println(e);
+        }
+
+    }
+    @Override
+    public void handle(ActionEvent event) {
+        MenuItem menuItem = (MenuItem) event.getSource();
+        String name = menuItem.getText();
+        System.out.println(name);
+        if("Load File".equals(name))
+        {
+            openFileAction();
+            buildMolecule();
+            buildNodes();
+        }
+    }
+
+    private MenuBar createMenu(){
+        MenuBar menuBar = new MenuBar();
+        Menu menu= new Menu("File");
+        MenuItem load = new MenuItem("Load File");
+        load.setOnAction(this);
+        menu.getItems().add(load);
+        menuBar.getMenus().add(menu);
+
+        return menuBar;
+    }
 
     @Override
     public void start(Stage primaryStage) {
-        root.getChildren().add(world);
+        //3D
         root.setDepthTest(DepthTest.ENABLE);
-        readFile();
+        root.getChildren().add(world);
+        SubScene subScene = new SubScene(root, 790, 600, true, SceneAntialiasing.BALANCED);
+        subScene.setCamera(camera);
+
+        //2D
+        BorderPane bpane=new BorderPane();
+        bpane.setCenter(subScene);
+        bpane.setTop(createMenu());
+        bpane.setPrefSize(800,10);
+
         buildCamera();
         buildAxes();
-        createMolecules();
-        createNodes();
-        Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT, true);
+
+        Scene scene = new Scene(bpane, SCENE_WIDTH, SCENE_HEIGHT, true);
         scene.setFill(Color.DARKGREY);
         handleKeyboard(scene, world);
         handleMouse(scene, world);
         primaryStage.setTitle(STAGE_TITTLE);
         primaryStage.setScene(scene);
         primaryStage.show();
-
-        scene.setCamera(camera);
     }
     public static void main(String[] args) {
         launch(args);
     }
-
 }
