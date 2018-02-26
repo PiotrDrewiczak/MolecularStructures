@@ -20,7 +20,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="9">
-      <module name="MoleculeVisualisation" target="1.5" />
+      <module name="MoleculeVisualisation" target="9" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

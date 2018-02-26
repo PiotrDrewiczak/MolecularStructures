@@ -6,7 +6,7 @@ import javafx.scene.shape.Sphere;
 public abstract class Atom {
 
     protected double x, y, z;
-    protected double radius=0.2;
+    protected static final double radius=0.2;
 
     public Atom(double x, double y, double z) {
         this.x = x;

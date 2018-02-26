@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -26,14 +27,15 @@ public class Main extends Application implements EventHandler<ActionEvent>{
     private final Xform axisGroup = new Xform();
     private final Xform moleculeGroup = new Xform();
     private final Xform world = new Xform();
-    private final PerspectiveCamera camera = new PerspectiveCamera(true);
+
     private final Xform cameraXform = new Xform();
     private final Xform cameraXform2 = new Xform();
     private final Xform cameraXform3 = new Xform();
-    private final double distanceConnection=1.55; // VALUE FOR ATOM CONNECTION
-    private ArrayList<sample.Atom> Atoms;
-    private ArrayList<sample.Nodes> Nodes;
 
+    private ArrayList<Atom> Atoms= new ArrayList<Atom>();
+    private ArrayList<Nodes> Nodes=new ArrayList<Nodes>();
+
+    private final PerspectiveCamera camera = new PerspectiveCamera(true);
     private static final double CAMERA_INITIAL_DISTANCE = -1;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
     private static final double CAMERA_INITIAL_Y_ANGLE = 320.0;
@@ -45,19 +47,32 @@ public class Main extends Application implements EventHandler<ActionEvent>{
     private static final int SCENE_HEIGHT = 600;
     private static final String STAGE_TITTLE = "Visualization of molecular structures";
     private static final String QualifyClassName="sample.";
-
+    private static final double DISTANCE_CONNECTION=1.55; // VALUE FOR ATOM CONNECTION
     private static final double CONTROL_MULTIPLIER = 0.1;
     private static final double SHIFT_MULTIPLIER = 10.0;
     private static final double MOUSE_SPEED = 0.1;
     private static final double ROTATION_SPEED = 2.0;
     private static final double TRACK_SPEED = 0.3;
-
+    private static final String helpAllert =
+            "The text file that processes the application should contain the following structure\n" +
+            "1. The number of atoms should be written in the first line.\n" +
+            "2. In each subsequent atom symbol, eg \"H\" and 3 variable comma values given as X, Y, Z.\n"+
+            "Applies only supports \"H, C, N and O\" atoms\n" +
+            "The application automatically calculates the distances between atoms, if their distance is less than 1.65, atoms are bonded.\n\n" +
+            "EXAMPLE OF FILE\n" +
+            "4\n" +
+            "H  0,321322    1,42141     4,321321\n" +
+            "N  1,321331    2,10001     0,3212\n" +
+            "O  0,012321    0,42211     1,23213\n" +
+            "H  0,032132    0,03213     0,0321321";
+    private static final String exceptionError="Error,Bad file structure!";
+    private static final String couldNotFindAtom="Error,Unknown atom symbol in file structure!";
     private double mousePosX;
     private double mousePosY;
     private double mouseOldX;
     private double mouseOldY;
     private double mouseDeltaX;
-    private  double mouseDeltaY;
+    private double mouseDeltaY;
 
     private void handleMouse(Scene scene, final Node root) {
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
@@ -115,9 +130,6 @@ public class Main extends Application implements EventHandler<ActionEvent>{
                     case X:
                         axisGroup.setVisible(!axisGroup.isVisible());
                         break;
-                    case V:
-                        moleculeGroup.setVisible(!moleculeGroup.isVisible());
-                        break;
                 }
             }
         });
@@ -161,84 +173,125 @@ public class Main extends Application implements EventHandler<ActionEvent>{
         world.getChildren().addAll(axisGroup);
     }
     private void buildMolecule(){
-        Xform oxygenXform = new Xform();
             for(Atom o:   Atoms) {
-                oxygenXform.getChildren().add(o.createAtom());
+                moleculeGroup.getChildren().add(o.createAtom());
             }
-            world.getChildren().addAll(oxygenXform);
+            world.getChildren().addAll(moleculeGroup);
     }
     private void buildNodes() {
-        Nodes = new ArrayList<sample.Nodes>();
-        double distance = 0;
-        Xform nodesXform = new Xform();
+        double distanceBetweenAtoms = 0;
         for (int i = 0; i < Atoms.size(); i++) {
             for (int j = 0; j < Atoms.size(); j++) {
-                distance = Math.sqrt(
-                                Math.pow((Atoms.get(i).getPoint3D().getX()-Atoms.get(j).getPoint3D().getX()), 2) +
-                                Math.pow((Atoms.get(i).getPoint3D().getY()-Atoms.get(j).getPoint3D().getY()), 2) +
-                                Math.pow((Atoms.get(i).getPoint3D().getZ()-Atoms.get(j).getPoint3D().getZ()), 2));
-
-                if (distance <= distanceConnection && distance!=0.0) {
-                    sample.Nodes node = new Nodes(Atoms.get(i).getPoint3D(), Atoms.get(j).getPoint3D());
+                distanceBetweenAtoms = Atoms.get(i).getPoint3D().distance(Atoms.get(j).getPoint3D());
+                if (distanceBetweenAtoms <= DISTANCE_CONNECTION && distanceBetweenAtoms!=0.0) {
+                    Nodes node = new Nodes(Atoms.get(i).getPoint3D(), Atoms.get(j).getPoint3D());
                     Nodes.add(node);
                 }
             }
         }
-            for(sample.Nodes n: Nodes){
-                nodesXform.getChildren().add(n.createConnection());
+            for(Nodes n: Nodes){
+                moleculeGroup.getChildren().add(n.createConnection());
             }
-                world.getChildren().addAll(nodesXform);
+                world.getChildren().addAll(moleculeGroup);
     }
-    private void openFileAction() {
+    private void processTheFile(){
+        int numberOfAtoms=0;
+        String symbol;
+        double x,y,z;
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Open File");
         File file = chooser.showOpenDialog(new Stage());
         try{
-            Atoms = new ArrayList<sample.Atom>();
             Scanner scanner = new Scanner(file);
-            int numberOfAtoms=Integer.parseInt(scanner.next());
+            if(scanner.hasNextInt()){
+                 numberOfAtoms=Integer.parseInt(scanner.next());
+            }
+            else{
+                throw new WrongFormatException(exceptionError);
+            }
             Atom[] instances = new Atom[numberOfAtoms];
 
             for (int i = 0; i < numberOfAtoms; i++) {
-                String name = scanner.next();
-                double x = scanner.nextDouble();
-                double y = scanner.nextDouble();
-                double z = scanner.nextDouble();
+            if(scanner.hasNext()){
+                symbol = scanner.next();
+            }
+            else{
+                throw new WrongFormatException(exceptionError);
+            }
+                if(scanner.hasNextDouble()){
+                     x = scanner.nextDouble();
+                }
+                else{
+                    throw new WrongFormatException(exceptionError);
+                }
+                if(scanner.hasNextDouble()){
+                    y = scanner.nextDouble();
+                }
+                else{
+                    throw new WrongFormatException(exceptionError);
+                }
+                if(scanner.hasNextDouble()){
+                    z = scanner.nextDouble();
+                }
+                else{
+                    throw new WrongFormatException(exceptionError);
+                }
 
-                Class<?> clazz = Class.forName(QualifyClassName + name);
-                Constructor<?> constructor = clazz.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
-                instances[i] = (Atom) constructor.newInstance(x, y, z);
-                Atoms.add(instances[i]);
+                try{
+                    Class<?> clazz = Class.forName(QualifyClassName + symbol);
+                    Constructor<?> constructor = clazz.getConstructor(Double.TYPE, Double.TYPE, Double.TYPE);
+                    instances[i] = (Atom) constructor.newInstance(x, y, z);
+                    Atoms.add(instances[i]);
+                }catch(ClassNotFoundException e){
+                    throw new WrongFormatException(couldNotFindAtom);
+
+                }
             }
             scanner.close();
         }catch(Exception e){
             System.out.println(e);
         }
-
     }
-    @Override
-    public void handle(ActionEvent event) {
-        MenuItem menuItem = (MenuItem) event.getSource();
-        String name = menuItem.getText();
-        System.out.println(name);
-        if("Load File".equals(name))
-        {
-            openFileAction();
-            buildMolecule();
-            buildNodes();
-        }
-    }
+    private void helpInformation(){
+        Alert alert = new Alert(Alert.AlertType.INFORMATION.INFORMATION);
+        alert.setTitle("Information Dialog");
+        alert.setHeaderText(null);
+        alert.setContentText(helpAllert);
 
-    private MenuBar createMenu(){
+        alert.showAndWait();
+    }
+        private MenuBar createMenu(){
         MenuBar menuBar = new MenuBar();
-        Menu menu= new Menu("File");
-        MenuItem load = new MenuItem("Load File");
+        Menu menuFile= new Menu("File");
+        Menu menuHelp = new Menu("Help");
+        MenuItem load = new MenuItem("Import configuration...");
+        MenuItem readme = new MenuItem("Readme");
         load.setOnAction(this);
-        menu.getItems().add(load);
-        menuBar.getMenus().add(menu);
+        readme.setOnAction(this);
+        menuHelp.getItems().add(readme);
+        menuFile.getItems().add(load);
+        menuBar.getMenus().add(menuFile);
+        menuBar.getMenus().add(menuHelp);
 
         return menuBar;
     }
+
+    @Override
+    public void handle(ActionEvent event) {
+        MenuItem menuItem = (MenuItem) event.getSource();
+        String itemName = menuItem.getText();
+
+        if("Import configuration...".equals(itemName))
+        {
+            processTheFile();
+            buildMolecule();
+            buildNodes();
+        }
+        if("Readme".equals(itemName)){
+            helpInformation();
+        }
+    }
+
 
     @Override
     public void start(Stage primaryStage) {
